@@ -20,6 +20,7 @@
         <h2>Your Trip</h2>
         <div ng-repeat="destination in vm.destinations">
             <span>{{destination.city}}, {{destination.country}}</span>
+            <button ng-click="vm.removeDestination($index)">X</button>
         </div>
     </section>
 </body>

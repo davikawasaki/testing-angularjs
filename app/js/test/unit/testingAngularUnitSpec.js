@@ -1,4 +1,4 @@
-/**
+/*
  * Setting the Starting Tests Suite
  *
  * Injects the module before each block of test
@@ -6,7 +6,7 @@
 describe('Testing AngularJS Test Suite', function() {
     beforeEach(module('testingAngularApp'));
 
-    /**
+    /*
      * Controller block tests
      *
      * Test title name in controller,
@@ -28,7 +28,7 @@ describe('Testing AngularJS Test Suite', function() {
             // Cleanup code
         });
 
-        /**
+        /*
          * Test the initialized title in scope
          *
          * vm.title is already an attribute of the controller,
@@ -39,7 +39,7 @@ describe('Testing AngularJS Test Suite', function() {
             expect(ctrl.title).toBe("Testing AngularJS Applications");
         });
 
-        /**
+        /*
          * Test 2 destinations added to destinations list
          *
          * Verifies if the list is defined and empty,
@@ -70,6 +70,33 @@ describe('Testing AngularJS Test Suite', function() {
 
             expect(ctrl.destinations[0].city).toBe("London");
             expect(ctrl.destinations[0].country).toBe("England");
+        });
+
+        /*
+         * Test removal from destinations list
+         *
+         * Starts with a predefined destinations list
+         * and then remove the first object.
+         * Then, verifies if the list length has been reduced
+         * and checks if the last element has become the first
+         */
+        it('should remove a destination from the destinations list', function() {
+            ctrl.destinations = [
+                {
+                    city: "Paris",
+                    country: "France"
+                },
+                {
+                    city: "Warsaw",
+                    country: "Poland"
+                }
+            ];
+            expect(ctrl.destinations.length).toBe(2);
+
+            ctrl.removeDestination(0);
+            expect(ctrl.destinations.length).toBe(1);
+            expect(ctrl.destinations[0].city).toBe("Warsaw");
+            expect(ctrl.destinations[0].country).toBe("Poland");
         });
     });
 });

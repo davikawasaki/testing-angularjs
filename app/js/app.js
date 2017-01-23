@@ -13,6 +13,7 @@ testingAngularApp.controller('testingAngularCtrl', function($rootScope) {
 
     // Methods
     vm.addDestination = addDestination;
+    vm.removeDestination = removeDestination;
 
     ////////////////////////
 
@@ -27,7 +28,16 @@ testingAngularApp.controller('testingAngularCtrl', function($rootScope) {
                 country: vm.newDestination.country
             }
         );
-    }
+    };
+
+    /*
+     * Remove destination from list
+     * @param index
+     */
+    function removeDestination(index)
+    {
+        vm.destinations.splice(index, 1);
+    };
 
 
 });
