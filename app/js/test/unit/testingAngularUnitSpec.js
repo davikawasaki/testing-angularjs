@@ -15,17 +15,21 @@ describe('Testing AngularJS Test Suite', function() {
      * To use a scope, needs to instantiate
      * a new one through $rootScope dependency
      *
-     * After each block of code do a cleanup
+     * After each block of code, account for all possible
+     * backend calls that could be happening
      */
     describe('Testing AngularJS Controller', function() {
-        var ctrl;
-        beforeEach(inject(function($controller, $rootScope) {
+        var ctrl, httpBackend;
+
+        beforeEach(inject(function($controller, $rootScope, $httpBackend) {
             scope = $rootScope.$new();
             ctrl = $controller('testingAngularCtrl');
+            httpBackend = $httpBackend;
         }));
 
         afterEach(function() {
-            // Cleanup code
+            httpBackend.verifyNoOutstandingExpectation();
+            httpBackend.verifyNoOutstandingRequest();
         });
 
         /*
@@ -97,6 +101,59 @@ describe('Testing AngularJS Test Suite', function() {
             expect(ctrl.destinations.length).toBe(1);
             expect(ctrl.destinations[0].city).toBe("Warsaw");
             expect(ctrl.destinations[0].country).toBe("Poland");
+        });
+
+        /*
+         * Test removal from destinations list
+         *
+         * Starts with a predefined destination object.
+         * After that, it mocks a predefined response from
+         * the HTTP API request and calls the getWeather function
+         * from the injected controller. After a flush update,
+         * verify if the weather and temperature results
+         * matches the ones from the predefined response
+         */
+        it('should update the weather for a specific destination', function() {
+            ctrl.destination = {
+                city: "Melbourne",
+                country: "Australia"
+            };
+
+            // Version with expectGET() function
+
+            // httpBackend
+            //     .expectGET("http://api.openweathermap.org/data/2.5/weather?q="
+            //     + ctrl.destination.city + "&APPID=" + ctrl.apiKey + "&units=metric")
+            //     .respond(
+            //         {
+            //             weather: [{main: 'Rain', detail: 'Light rain'}],
+            //             main: {temp: 15}
+            //         }
+            //     );
+
+            // Version with when() function and response type
+
+            httpBackend
+                .when('GET', 'http://api.openweathermap.org/data/2.5/weather?q='
+                          + ctrl.destination.city + '&APPID=' + ctrl.apiKey + '&units=metric')
+                .respond(
+                    200,
+                    {
+                        weather: [{main: 'Rain', detail: 'Light rain'}],
+                        main: {temp: 15}
+                    }
+                );
+
+            ctrl.getWeather(ctrl.destination);
+
+            // Tells angular to respond to all pending requests,
+            // where all WHEN configurations are resolved and
+            // set synchronous control over the asynchronous
+            // $http.get functions
+            httpBackend.flush();
+
+            expect(ctrl.destination.weather.main).toBe("Rain");
+            expect(ctrl.destination.weather.temp).toBe(15);
         });
     });
 });
