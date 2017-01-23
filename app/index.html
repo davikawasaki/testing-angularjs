@@ -6,6 +6,21 @@
     <script src="js/app.js" type="text/javascript"></script>
 </head>
 <body ng-controller="testingAngularCtrl as vm">
-    {{vm.title}}
+    <header>
+        <h1>{{vm.title}}</h1>
+    </header>
+    <section>
+        <form ng-submit="vm.addDestination()">
+            City: <input name="city" type="text" ng-model="vm.newDestination.city" />
+            Country: <input name="country" type="text" ng-model="vm.newDestination.country" />
+            <input type="submit" name="Add">
+        </form>
+    </section>
+    <section>
+        <h2>Your Trip</h2>
+        <div ng-repeat="destination in vm.destinations">
+            <span>{{destination.city}}, {{destination.country}}</span>
+        </div>
+    </section>
 </body>
 </html>
