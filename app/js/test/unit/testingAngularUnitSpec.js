@@ -19,12 +19,15 @@ describe('Testing AngularJS Test Suite', function() {
      * backend calls that could be happening
      */
     describe('Testing AngularJS Controller', function() {
-        var ctrl, httpBackend;
+        var ctrl, httpBackend, timeout;
 
-        beforeEach(inject(function($controller, $rootScope, $httpBackend) {
+        beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout) {
             scope = $rootScope.$new();
-            ctrl = $controller('testingAngularCtrl');
+            ctrl = $controller('testingAngularCtrl', {
+                $scope: scope
+            });
             httpBackend = $httpBackend;
+            timeout = $timeout;
         }));
 
         afterEach(function() {
@@ -154,6 +157,25 @@ describe('Testing AngularJS Test Suite', function() {
 
             expect(ctrl.destination.weather.main).toBe("Rain");
             expect(ctrl.destination.weather.temp).toBe(15);
+        });
+
+        /*
+         * Test if an error message disappears after timeout
+         *
+         * Check if an error message is displayed,
+         * firing the digest cycle to update the DOM
+         * and then flush the timeout to verify if
+         * the message has been cleared out.
+         */
+        it('should remove error message after a fixed period of time', function() {
+            ctrl.message = "Error";
+            expect(ctrl.message).toBe("Error");
+
+            // Check for any changes and fire the digest cycle
+            scope.$apply();
+            timeout.flush();
+
+            expect(ctrl.message).toBeNull();
         });
     });
 });

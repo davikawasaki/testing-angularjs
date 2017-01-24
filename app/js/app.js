@@ -1,6 +1,6 @@
 var testingAngularApp = angular.module('testingAngularApp', []);
 
-testingAngularApp.controller('testingAngularCtrl', function($http) {
+testingAngularApp.controller('testingAngularCtrl', function($http, $timeout, $scope) {
     var vm = this;
 
     // Data
@@ -55,12 +55,31 @@ testingAngularApp.controller('testingAngularCtrl', function($http) {
                                     destination.weather = {};
                                     destination.weather.main = response.data.weather[0].main;
                                     destination.weather.temp = response.data.main.temp;
+                                } else {
+                                    vm.message = "City not found";
                                 }
                             },
                             function errorCallback (error) {
                                 console.log(error);
+                                if (error.status == 502) {
+                                    vm.message = "City not found";
+                                } else {
+                                    vm.message = error.data.message;
+                                }
                             }
                         );
     };
+
+    /*
+     * Timeout message when it's defined
+     */
+     vm.messageWatcher = $scope.$watch('vm.message', function() {
+        if (vm.message) {
+            $timeout(function () {
+                vm.message = null;
+            }, 3000);
+        }
+     });
+
 
 });
