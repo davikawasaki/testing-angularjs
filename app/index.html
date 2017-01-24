@@ -28,5 +28,11 @@
             <button ng-click="vm.getWeather(destination)">Update Weather</button>
         </div>
     </section>
+    <section>
+        <h2>Warmest Destinations</h2>
+        <div ng-repeat="destination in vm.destinations | warmestDestinations: 10">
+            <span>{{destination.city}}, {{destination.country}}</span>
+        </div>
+    </section>
 </body>
 </html>

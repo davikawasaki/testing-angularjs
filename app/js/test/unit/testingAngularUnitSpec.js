@@ -9,8 +9,8 @@ describe('Testing AngularJS Test Suite', function() {
     /*
      * Controller block tests
      *
-     * Test title name in controller,
-     * injecting the controller before each test
+     * Test all functions related to the
+     * testingAngularCtrl controller
      *
      * To use a scope, needs to instantiate
      * a new one through $rootScope dependency
@@ -177,5 +177,67 @@ describe('Testing AngularJS Test Suite', function() {
 
             expect(ctrl.message).toBeNull();
         });
+    });
+
+    /*
+     * Filter block tests
+     *
+     * Test all functions related to the
+     * warmestDestinations filter
+     *
+     * In order to test a filter, it needs to inject
+     * its dependency in the it block.
+     * In this case, it doesn't need a beforeEach() function
+     * because there's only a filter function to test
+     */
+    describe('Testing AngularJS Filter', function() {
+
+        /*
+         * Test if warm destinations are filtered accordingly
+         *
+         * Defines the list of destinations and call
+         * the warmestDestinations to filter according
+         * to weather, temperature existence and
+         * under the determined temperature
+         */
+        it('should return only warm destinations', inject(function($filter) {
+            var warmest = $filter('warmestDestinations');
+
+            var destinations = [
+                {
+                    city: "Beijing",
+                    country: "China",
+                    weather: {
+                        temp: 21
+                    }
+                },
+                {
+                    city: "Moscow",
+                    country: "Russia"
+                },
+                {
+                    city: "Mexico City",
+                    country: "Mexico",
+                    weather: {
+                        temp: 12
+                    }
+                },
+                {
+                    city: "Lima",
+                    country: "Peru",
+                    weather: {
+                        temp: 15
+                    }
+                }
+            ];
+
+            expect(destinations.length).toBe(4);
+
+            var warmestDestinations = warmest(destinations, 15);
+
+            expect(warmestDestinations.length).toBe(2);
+            expect(warmestDestinations[0].city).toBe("Beijing");
+            expect(warmestDestinations[1].city).toBe("Lima");
+        }));
     });
 });
