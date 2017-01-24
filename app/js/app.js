@@ -1,6 +1,6 @@
 var testingAngularApp = angular.module('testingAngularApp', []);
 
-testingAngularApp.controller('testingAngularCtrl', function($http, $timeout, $scope) {
+testingAngularApp.controller('testingAngularCtrl', function($http, $timeout, $scope, $rootScope) {
     var vm = this;
 
     // Data
@@ -15,7 +15,6 @@ testingAngularApp.controller('testingAngularCtrl', function($http, $timeout, $sc
     // Methods
     vm.addDestination = addDestination;
     vm.removeDestination = removeDestination;
-    vm.getWeather = getWeather;
 
     ////////////////////////
 
@@ -42,41 +41,12 @@ testingAngularApp.controller('testingAngularCtrl', function($http, $timeout, $sc
     };
 
     /*
-     * Get weather data from API Open Weather Map
-     * @param destination
-     */
-    function getWeather(destination)
-    {
-        $http.get("http://api.openweathermap.org/data/2.5/weather?q="
-                       + destination.city + "&APPID=" + vm.apiKey + "&units=metric")
-                       .then(
-                            function successCallback (response) {
-                                if (response.data.weather) {
-                                    destination.weather = {};
-                                    destination.weather.main = response.data.weather[0].main;
-                                    destination.weather.temp = response.data.main.temp;
-                                } else {
-                                    vm.message = "City not found";
-                                }
-                            },
-                            function errorCallback (error) {
-                                console.log(error);
-                                if (error.status == 502) {
-                                    vm.message = "City not found";
-                                } else {
-                                    vm.message = error.data.message;
-                                }
-                            }
-                        );
-    };
-
-    /*
      * Timeout message when it's defined
      */
-     vm.messageWatcher = $scope.$watch('vm.message', function() {
-        if (vm.message) {
+     $rootScope.messageWatcher = $rootScope.$watch('message', function() {
+        if ($rootScope.message) {
             $timeout(function () {
-                vm.message = null;
+                $rootScope.message = null;
             }, 3000);
         }
      });
@@ -95,5 +65,62 @@ testingAngularApp.filter('warmestDestinations', function() {
         });
 
         return warmestDestinations;
+    }
+});
+
+testingAngularApp.directive('destinationDirective', function() {
+    return {
+        scope: {
+            destination: '=',
+            apiKey: '=',
+            onRemove: '&'
+        },
+        template:
+            '<span>{{destination.city}}, {{destination.country}}</span>' +
+            '<span ng-if="destination.weather">' +
+                '- {{destination.weather.main}}, {{destination.weather.temp}} &#8451;' +
+            '</span>' +
+            '<button ng-click="onRemove()">X</button>' +
+            '<button ng-click="getWeather(destination)">Update Weather</button>',
+        controller: function($http, $rootScope, $scope) {
+            var vm = this;
+
+            // Data
+            vm.destination = $scope.destination;
+            vm.apiKey = $scope.apiKey;
+
+            // Methods
+            $scope.getWeather = getWeather;
+
+            ////////////////////////
+            /*
+             * Get weather data from API Open Weather Map
+             * @param destination
+             */
+            function getWeather(destination)
+            {
+                $http.get("http://api.openweathermap.org/data/2.5/weather?q="
+                                + destination.city + "&APPID=" + vm.apiKey + "&units=metric")
+                        .then(
+                            function successCallback (response) {
+                                if (response.data.weather) {
+                                    destination.weather = {};
+                                    destination.weather.main = response.data.weather[0].main;
+                                    destination.weather.temp = response.data.main.temp;
+                                } else {
+                                    $rootScope.message = "City not found";
+                                }
+                            },
+                            function errorCallback (error) {
+                                console.log(error);
+                                if (error.status == 502) {
+                                    $rootScope.message = "City not found";
+                                } else {
+                                    $rootScope.message = error.data.message;
+                                }
+                            }
+                        );
+            };
+        }
     }
 });

@@ -18,14 +18,9 @@
     </section>
     <section>
         <h2>Your Trip</h2>
-        <h4 ng-show="vm.message">{{vm.message}}</h4>
+        <h4 ng-show="message">{{message}}</h4>
         <div ng-repeat="destination in vm.destinations">
-            <span>{{destination.city}}, {{destination.country}}</span>
-            <span ng-if="destination.weather">
-                - {{destination.weather.main}}, {{destination.weather.temp}} &#8451;
-            </span>
-            <button ng-click="vm.removeDestination($index)">X</button>
-            <button ng-click="vm.getWeather(destination)">Update Weather</button>
+            <div destination-directive destination="destination" api-key="vm.apiKey" on-remove="vm.removeDestination($index)"></div>
         </div>
     </section>
     <section>
