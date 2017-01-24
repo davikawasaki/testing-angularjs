@@ -251,10 +251,11 @@ describe('Testing AngularJS Test Suite', function() {
             });
         });
 
-        beforeEach(inject(function($compile, $rootScope, $httpBackend, $rootScope) {
+        beforeEach(inject(function($compile, $rootScope, $httpBackend, $rootScope, _conversionService_) {
             rootScope = $rootScope;
             scope = $rootScope.$new();
             httpBackend = $httpBackend;
+            conversionService = _conversionService_;
 
             scope.destination = {
                 city: "Tokyo",
@@ -292,6 +293,17 @@ describe('Testing AngularJS Test Suite', function() {
          * the directive block of tests
          */
         it('should update the weather for a specific destination', function() {
+            // Execute the function and delegate to its actual code
+            spyOn(conversionService, 'convertKelvinToCelsius').and.callThrough();
+
+            // Force a return answer
+            // spyOn(conversionService, 'convertKelvinToCelsius').and.returnValue(15);
+
+            // Mock the entire implementation of the function
+            // spyOn(conversionService, 'convertKelvinToCelsius').and.callFake(function(temp) {
+            //     return temp - 273;
+            // });
+
             scope.destination = {
                 city: "Melbourne",
                 country: "Australia"
@@ -332,6 +344,8 @@ describe('Testing AngularJS Test Suite', function() {
 
             expect(scope.destination.weather.main).toBe("Rain");
             expect(scope.destination.weather.temp).toBe(15);
+
+            expect(conversionService.convertKelvinToCelsius).toHaveBeenCalledWith(288);
         });
 
         /*
@@ -375,9 +389,13 @@ describe('Testing AngularJS Test Suite', function() {
         /*
          * Test server 500 response
          *
-         * Check if the server doesn't returned the proper data
+         * Check if the server doesn't returned the proper data.
+         * Turns on a spy in the beggining of the event to check
+         * if the server error was really broadcasted through $rootScope.
          */
         it('should add a message when there is a server error', function() {
+            spyOn(rootScope, '$broadcast');
+
             scope.destination = {
                 city: "Melbourne",
                 country: "Australia"
@@ -392,6 +410,16 @@ describe('Testing AngularJS Test Suite', function() {
             httpBackend.flush();
 
             expect(rootScope.message).toBe("Server Error");
+
+            // Check if the spy has been called at least one time
+            expect(rootScope.$broadcast).toHaveBeenCalled();
+
+            // Check if the spy has been called with the specific broadcast with the object
+            expect(rootScope.$broadcast).toHaveBeenCalledWith('messageUpdated', {type: 'error', message: 'Server error'});
+
+            // Check the quantity of server errors received
+            // with the returned value of count function
+            expect(rootScope.$broadcast.calls.count()).toBe(1);
         });
 
         /*

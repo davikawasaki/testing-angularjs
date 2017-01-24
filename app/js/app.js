@@ -116,7 +116,8 @@ testingAngularApp.directive('destinationDirective', function() {
                                 if (error.status == 502) {
                                     $rootScope.message = "City not found";
                                 } else {
-                                    $rootScope.message = "Server Error"
+                                    $rootScope.message = "Server Error";
+                                    $rootScope.$broadcast('messageUpdated', {type: 'error', message: 'Server error'});
                                 }
                             }
                         );
