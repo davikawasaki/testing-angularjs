@@ -190,6 +190,31 @@ describe('Testing AngularJS Test Suite', function() {
     });
 
     /*
+     * Service block tests
+     *
+     * Test all functions related to the
+     * conversion service
+     *
+     * In order to test a service, it needs to inject
+     * its service dependency in the it block.
+     * In this case, it doesn't need a beforeEach() function
+     * because there's only a service function to test
+     */
+    describe('Testing AngularJS Service', function() {
+
+        /*
+         * Test if a temperature is converted properly
+         */
+        it('should return the converted value', inject(function(conversionService) {
+            conversionService = conversionService;
+            var temp = 288;
+
+            var conversionResult = conversionService.convertKelvinToCelsius(temp);
+            expect(conversionResult).toBe(15);
+        }));
+    });
+
+    /*
      * Directive block tests
      *
      * Test all functions related to
@@ -199,9 +224,32 @@ describe('Testing AngularJS Test Suite', function() {
      * its dependency beforeEach block test,
      * declaring specially its isolateScope,
      * which is the isolated area within the directive element.
+     *
+     * Also make a mocked version of the conversion service
+     * to isolate the service and doesn't depend totally
+     * on the lines of the whole service.
+     *
+     * With the mocked seservicervice dependency in the beforeEach block,
+     * it'll focus on the concerned component as well as making it possible
+     * to update the raw service and still pass the related tests.
      */
     describe('Testing AngularJS Directive', function() {
         var scope, template, httpBackend, isolateScope,rootScope;
+
+        beforeEach(function () {
+            module(function($provide) {
+                var conversionServiceMock = {
+                    convertKelvinToCelsius: function(temp) {
+                        return Math.round(temp - 273);
+                    }
+                };
+
+                // Any reference to the conversion service
+                // will inject instead the mocked conversion service
+                // wrote in the up written object.
+                $provide.value('conversionService', conversionServiceMock);
+            });
+        });
 
         beforeEach(inject(function($compile, $rootScope, $httpBackend, $rootScope) {
             rootScope = $rootScope;
@@ -265,12 +313,12 @@ describe('Testing AngularJS Test Suite', function() {
 
             httpBackend
                 .when('GET', 'http://api.openweathermap.org/data/2.5/weather?q='
-                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                          + scope.destination.city + '&APPID=' + scope.apiKey)
                 .respond(
                     200,
                     {
                         weather: [{main: 'Rain', detail: 'Light rain'}],
-                        main: {temp: 15}
+                        main: {temp: 288}
                     }
                 );
 
@@ -300,7 +348,7 @@ describe('Testing AngularJS Test Suite', function() {
 
             httpBackend
                 .when('GET', 'http://api.openweathermap.org/data/2.5/weather?q='
-                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                          + scope.destination.city + '&APPID=' + scope.apiKey)
                 .respond(
                     200,
                     {}
@@ -314,7 +362,7 @@ describe('Testing AngularJS Test Suite', function() {
 
             httpBackend
                 .expectGET('http://api.openweathermap.org/data/2.5/weather?q='
-                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                          + scope.destination.city + '&APPID=' + scope.apiKey)
                 .respond(502);
 
             isolateScope.getWeather(scope.destination);
@@ -337,7 +385,7 @@ describe('Testing AngularJS Test Suite', function() {
 
             httpBackend
                 .expectGET('http://api.openweathermap.org/data/2.5/weather?q='
-                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                          + scope.destination.city + '&APPID=' + scope.apiKey)
                 .respond(500);
 
             isolateScope.getWeather(scope.destination);

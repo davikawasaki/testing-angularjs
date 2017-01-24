@@ -82,7 +82,7 @@ testingAngularApp.directive('destinationDirective', function() {
             '</span>' +
             '<button ng-click="onRemove()">X</button>' +
             '<button ng-click="getWeather(destination)">Update Weather</button>',
-        controller: function($http, $rootScope, $scope) {
+        controller: function($http, $rootScope, $scope, conversionService) {
             var vm = this;
 
             // Data
@@ -100,13 +100,13 @@ testingAngularApp.directive('destinationDirective', function() {
             function getWeather(destination)
             {
                 $http.get("http://api.openweathermap.org/data/2.5/weather?q="
-                                + destination.city + "&APPID=" + vm.apiKey + "&units=metric")
+                                + destination.city + "&APPID=" + vm.apiKey)
                         .then(
                             function successCallback (response) {
                                 if (response.data.weather) {
                                     destination.weather = {};
                                     destination.weather.main = response.data.weather[0].main;
-                                    destination.weather.temp = response.data.main.temp;
+                                    destination.weather.temp = conversionService.convertKelvinToCelsius(response.data.main.temp);
                                 } else {
                                     $rootScope.message = "City not found";
                                 }
@@ -123,4 +123,12 @@ testingAngularApp.directive('destinationDirective', function() {
             };
         }
     }
+});
+
+testingAngularApp.service('conversionService', function() {
+    this.convertKelvinToCelsius = function(temp) {
+        return Math.round(temp - 273);
+    };
+
+    return this;
 });
