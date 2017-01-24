@@ -201,9 +201,10 @@ describe('Testing AngularJS Test Suite', function() {
      * which is the isolated area within the directive element.
      */
     describe('Testing AngularJS Directive', function() {
-        var scope, template, httpBackend, isolateScope;
+        var scope, template, httpBackend, isolateScope,rootScope;
 
-        beforeEach(inject(function($compile, $rootScope, $httpBackend) {
+        beforeEach(inject(function($compile, $rootScope, $httpBackend, $rootScope) {
+            rootScope = $rootScope;
             scope = $rootScope.$new();
             httpBackend = $httpBackend;
 
@@ -283,6 +284,66 @@ describe('Testing AngularJS Test Suite', function() {
 
             expect(scope.destination.weather.main).toBe("Rain");
             expect(scope.destination.weather.temp).toBe(15);
+        });
+
+        /*
+         * Test city not found
+         *
+         * Mock an empty object to be received, tracking
+         * through an empty response and a 502 response
+         */
+        it('should add a message if no city is found', function() {
+            scope.destination = {
+                city: "Melbourne",
+                country: "Australia"
+            };
+
+            httpBackend
+                .when('GET', 'http://api.openweathermap.org/data/2.5/weather?q='
+                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                .respond(
+                    200,
+                    {}
+                );
+
+            isolateScope.getWeather(scope.destination);
+
+            httpBackend.flush();
+
+            expect(rootScope.message).toBe("City not found");
+
+            httpBackend
+                .expectGET('http://api.openweathermap.org/data/2.5/weather?q='
+                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                .respond(502);
+
+            isolateScope.getWeather(scope.destination);
+
+            httpBackend.flush();
+
+            expect(rootScope.message).toBe("City not found");
+        });
+
+        /*
+         * Test server 500 response
+         *
+         * Check if the server doesn't returned the proper data
+         */
+        it('should add a message when there is a server error', function() {
+            scope.destination = {
+                city: "Melbourne",
+                country: "Australia"
+            };
+
+            httpBackend
+                .expectGET('http://api.openweathermap.org/data/2.5/weather?q='
+                          + scope.destination.city + '&APPID=' + scope.apiKey + '&units=metric')
+                .respond(500);
+
+            isolateScope.getWeather(scope.destination);
+            httpBackend.flush();
+
+            expect(rootScope.message).toBe("Server Error");
         });
 
         /*

@@ -112,11 +112,11 @@ testingAngularApp.directive('destinationDirective', function() {
                                 }
                             },
                             function errorCallback (error) {
-                                console.log(error);
+                                // console.log(error);
                                 if (error.status == 502) {
                                     $rootScope.message = "City not found";
                                 } else {
-                                    $rootScope.message = error.data.message;
+                                    $rootScope.message = "Server Error"
                                 }
                             }
                         );
